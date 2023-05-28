@@ -1,0 +1,38 @@
+  version: "3"
+  services:
+    web:
+      build: .
+      restart: on-failure
+      container_name: django_con
+      command: >
+        bash -c "python manage.py migrate
+        && python manage.py makemigrations
+        && python manage.py runserver 0.0.0.0:8000"
+      volumes:
+        - .:/project
+      ports:
+        - 8000:8000
+      depends_on:
+        - db
+      links:
+        - db:db
+    db:
+      image: postgres
+      container_name: cargo_db
+      restart: always
+      env_file:
+        - .env_file
+      volumes:
+        - postgres_data:/var/lib/postgresql/data/
+    load_locations:
+      build: .
+      command: python manage.py load_locations
+      volumes:
+        - .:/project
+      depends_on:
+        - db
+      links:
+        - db:db
+
+  volumes:
+    postgres_data:
